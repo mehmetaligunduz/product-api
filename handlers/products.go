@@ -21,7 +21,7 @@ func NewProducts(l *log.Logger, e *exception.Error) *Products {
 
 func (p *Products) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		p.getProducts(w, r)
+		p.getProducts(w)
 		return
 	}
 
@@ -66,13 +66,13 @@ func (p *Products) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		id, _ := strconv.Atoi(g[0][1])
 
-		p.deleteProduct(id, w, r)
+		p.deleteProduct(id, w)
 
 	}
 
 }
 
-func (p *Products) getProducts(w http.ResponseWriter, r *http.Request) {
+func (p *Products) getProducts(w http.ResponseWriter) {
 	p.l.Println("Handle GET Products")
 	lp := data.GetProducts()
 	err := lp.ToJSON(w)
@@ -119,7 +119,7 @@ func (p *Products) updateProduct(id int, w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (p *Products) deleteProduct(id int, w http.ResponseWriter, r *http.Request) {
+func (p *Products) deleteProduct(id int, w http.ResponseWriter) {
 
 	p.l.Println("handle DELETE Product")
 
