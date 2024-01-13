@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"product-api/exception"
 	"product-api/handlers"
 	"time"
 )
@@ -13,15 +14,11 @@ import (
 func main() {
 
 	l := log.New(os.Stdout, "product-api - ", log.LstdFlags)
+	e := exception.NewError()
 
-	hh := handlers.NewHello(l)
-	gb := handlers.NewGoodbye(l)
-
-	ph := handlers.NewProducts(l)
+	ph := handlers.NewProducts(l, e)
 
 	serveMux := http.NewServeMux()
-	serveMux.Handle("/", hh)
-	serveMux.Handle("/goodbye", gb)
 	serveMux.Handle("/products", ph)
 	serveMux.Handle("/products/", ph)
 

@@ -5,16 +5,18 @@ import (
 	"log"
 	"net/http"
 	"product-api/data"
+	"product-api/exception"
 	"regexp"
 	"strconv"
 )
 
 type Products struct {
 	l *log.Logger
+	e *exception.Error
 }
 
-func NewProducts(l *log.Logger) *Products {
-	return &Products{l}
+func NewProducts(l *log.Logger, e *exception.Error) *Products {
+	return &Products{l, e}
 }
 
 func (p *Products) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -124,10 +126,11 @@ func (p *Products) deleteProduct(id int, w http.ResponseWriter, r *http.Request)
 	err := data.DeleteProduct(id)
 
 	if errors.Is(err, data.ErrorProductNotFound) {
-
-		http.Error(w, "Product not found", http.StatusNotFound)
+		err := p.e.ProductNotFoundError().ToJSON(w)
+		if err != nil {
+			http.Error(w, "Invalid parameter", http.StatusInternalServerError)
+		}
 		return
-
 	}
 
 	if err != nil {
