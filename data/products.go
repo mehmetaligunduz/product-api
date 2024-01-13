@@ -33,6 +33,11 @@ func (p *Products) ToJSON(w io.Writer) error {
 	return e.Encode(p)
 }
 
+func (p *Product) ToJSON(w io.Writer) error {
+	e := json.NewEncoder(w)
+	return e.Encode(p)
+}
+
 func (p *Product) FromJSON(r io.Reader) error {
 	d := json.NewDecoder(r)
 	return d.Decode(p)
@@ -41,6 +46,11 @@ func (p *Product) FromJSON(r io.Reader) error {
 // GetProducts returns a list of products
 func GetProducts() Products {
 	return productList
+}
+
+func GetProduct(id int) *Product {
+	p, _, _ := findById(id)
+	return p
 }
 
 func AddProduct(p *Product) {

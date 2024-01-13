@@ -20,9 +20,41 @@ func NewProducts(l *log.Logger, e *exception.Error) *Products {
 }
 
 func (p *Products) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method == http.MethodGet {
-		p.getProducts(w)
-		return
+
+		p.l.Println("GET")
+
+		regex := regexp.MustCompile(`/([0-9]+)`)
+		g := regex.FindAllStringSubmatch(r.URL.Path, -1)
+
+		if len(g) != 1 {
+			p.getProducts(w)
+			return
+		}
+
+		if len(g) != 1 {
+			http.Error(w, "Invalid URI", http.StatusBadRequest)
+			return
+		}
+
+		if len(g[0]) != 2 {
+			http.Error(w, "Invalid URI", http.StatusBadRequest)
+			return
+		}
+
+		id, _ := strconv.Atoi(g[0][1])
+
+		err := p.getProduct(id, w)
+
+		if errors.Is(err, data.ErrorProductNotFound) {
+			err := p.e.ProductNotFoundError().ToJSON(w)
+			if err != nil {
+				return
+			}
+			return
+		}
+
 	}
 
 	if r.Method == http.MethodPost {
@@ -79,6 +111,23 @@ func (p *Products) getProducts(w http.ResponseWriter) {
 	if err != nil {
 		http.Error(w, "Unable to marshal json", http.StatusInternalServerError)
 	}
+}
+
+func (p *Products) getProduct(id int, w http.ResponseWriter) error {
+	p.l.Println("Handle GET Product")
+	dp := data.GetProduct(id)
+	if dp != nil {
+		err := dp.ToJSON(w)
+		if err != nil {
+			return err
+		}
+	}
+
+	if dp == nil {
+		return data.ErrorProductNotFound
+	}
+
+	return nil
 }
 
 func (p *Products) addProduct(w http.ResponseWriter, r *http.Request) {
